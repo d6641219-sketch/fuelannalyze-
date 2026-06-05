@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FuelAnalyze — Анализ судового топлива ISO 8217:2024</title>
+<meta name="description" content="Бесплатный AI-анализ паспортов качества судового топлива. ISO 8217:2024, MARPOL, CCI, ECA-compliance.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090d;--bg2:#0d1017;--bg3:#131720;--bg4:#191e29;
+  --b1:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.11);--b3:rgba(255,255,255,0.2);
+  --t1:#dde1ec;--t2:#7a8199;--t3:#41485c;
+  --g:#00e5b0;--g2:#00b88c;--gbg:rgba(0,229,176,0.07);--gbd:rgba(0,229,176,0.22);
+  --a:#f5a623;--abg:rgba(245,166,35,0.07);--abd:rgba(245,166,35,0.22);
+  --r:#ff4d4d;--rbg:rgba(255,77,77,0.07);--rbd:rgba(255,77,77,0.22);
+  --bl:#4d9fff;--rad:10px;--rad2:16px;--rad3:22px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--t1);font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.65;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle,rgba(0,229,176,0.09) 1px,transparent 1px);
+  background-size:34px 34px;
+  mask-image:radial-gradient(ellipse 90% 80% at 50% 30%,black 20%,transparent 80%)}
+.page{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 1.5rem 6rem}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:1.4rem 0;border-bottom:1px solid var(--b1);margin-bottom:0;flex-wrap:wrap;gap:10px}
+.nav-logo{display:flex;align-items:center;gap:11px}
+.nav-ico{width:36px;height:36px;border-radius:9px;background:var(--gbg);border:1px solid var(--gbd);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.nav-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-0.02em}
+.nav-name span{color:var(--g)}
+.nav-tags{display:flex;gap:6px;flex-wrap:wrap}
+.ntag{padding:3px 9px;border-radius:100px;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;border:1px solid;white-space:nowrap}
+.nt-g{background:var(--gbg);border-color:var(--gbd);color:var(--g)}
+.nt-a{background:var(--bg3);border-color:var(--b2);color:var(--t3)}
+
+/* HERO */
+.hero{text-align:center;padding:4rem 1rem 3.5rem;border-bottom:1px solid var(--b1);margin-bottom:3rem}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(30px,5vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.1rem}
+.hero h1 span{color:var(--g)}
+.hero p{color:var(--t2);font-size:14px;max-width:540px;margin:0 auto 2rem;line-height:1.85}
+.hero-features{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.hf{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:100px;font-size:11px;letter-spacing:0.04em;border:1px solid var(--b2);background:var(--bg3);color:var(--t2)}
+.hf-dot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0}
+
+/* UPLOAD CARD */
+.upload-card{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rad3);padding:2rem;margin-bottom:1.25rem}
+.uc-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:.4rem;color:var(--t1)}
+.uc-desc{font-size:12px;color:var(--t3);margin-bottom:1.5rem;line-height:1.7}
+
+.uzone{border:1.5px dashed var(--b2);border-radius:var(--rad2);background:transparent;padding:3rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;display:flex;flex-direction:column;align-items:center;gap:8px}
+.uzone:hover,.uzone.drag{border-color:var(--g);background:rgba(0,229,176,0.03)}
+.uzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.u-ico{font-size:40px;margin-bottom:4px;line-height:1}
+.u-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t1)}
+.u-sub{font-size:12px;color:var(--t2);margin-top:4px}
+.u-hint{font-size:10px;color:var(--t3);letter-spacing:0.04em;margin-top:2px}
+
+.fpill{display:none;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--b2);border-radius:var(--rad);padding:.7rem 1rem;margin-top:12px}
+.fpill.show{display:flex}
+.fp-n{flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t1)}
+.fp-s{color:var(--t3);font-size:11px;flex-shrink:0}
+.fp-x{color:var(--t3);cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;transition:color .15s;background:none;border:none;padding:0}
+.fp-x:hover{color:var(--r)}
+
+/* FORMATS */
+.formats{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem}
+.fmt{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:8px;background:var(--bg3);border:1px solid var(--b1);font-size:11px;color:var(--t3)}
+.fmt-ico{font-size:14px}
+
+/* ANALYZE BTN */
+.btn{height:48px;padding:0 1.5rem;border-radius:var(--rad2);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;letter-spacing:.04em;cursor:pointer;border:none;transition:all .18s;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+.bp{background:var(--g);color:#000}
+.bp:hover{background:var(--g2);transform:translateY(-1px)}
+.bp:active{transform:translateY(0)}
+.bp:disabled{background:var(--bg4);color:var(--t3);cursor:not-allowed;transform:none;border:1px solid var(--b1)}
+.bs{background:transparent;color:var(--t2);border:1px solid var(--b2)}.bs:hover{border-color:var(--b3);color:var(--t1)}
+.abtn{width:100%;height:54px;font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:.04em;border-radius:var(--rad2);margin-top:1.25rem}
+
+/* ERROR */
+.ebox{display:none;background:var(--rbg);border:1px solid var(--rbd);border-radius:var(--rad);padding:.9rem 1.1rem;color:var(--r);font-size:12px;margin-bottom:1rem;align-items:flex-start;gap:10px;line-height:1.6}
+.ebox.show{display:flex}
+
+/* LOADING */
+.loader{display:none;text-align:center;padding:4.5rem 1rem}
+.loader.show{display:block}
+.spin-wrap{position:relative;width:56px;height:56px;margin:0 auto 1.5rem}
+.spin{width:56px;height:56px;border-radius:50%;border:2px solid var(--b2);border-top-color:var(--g);animation:sp .7s linear infinite;position:absolute;inset:0}
+.spin-inner{position:absolute;inset:8px;border-radius:50%;border:1.5px solid var(--b1);border-bottom-color:rgba(0,229,176,0.4);animation:sp .9s linear infinite reverse}
+@keyframes sp{to{transform:rotate(360deg)}}
+.l-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:6px}
+.l-step{font-size:12px;color:var(--t3);margin-bottom:1.5rem}
+.progress{width:240px;height:3px;background:var(--b1);border-radius:2px;margin:0 auto;overflow:hidden}
+.progress-bar{height:100%;background:var(--g);border-radius:2px;width:0%;transition:width .4s ease}
+
+/* RESULTS */
+.res{display:none}.res.show{display:block}
+.slbl{display:flex;align-items:center;gap:10px;margin:2rem 0 1.1rem;font-size:10px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase}
+.slbl::after{content:'';flex:1;height:1px;background:var(--b1)}
+
+/* VERDICT */
+.verdict{border-radius:var(--rad2);padding:1.5rem 1.75rem;margin-bottom:1.25rem;border:1px solid;display:flex;gap:16px;align-items:flex-start}
+.verdict.pass{background:var(--gbg);border-color:var(--gbd)}
+.verdict.warn{background:var(--abg);border-color:var(--abd)}
+.verdict.fail{background:var(--rbg);border-color:var(--rbd)}
+.v-ico{font-size:32px;flex-shrink:0;line-height:1;padding-top:2px}
+.v-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:6px}
+.verdict.pass .v-title{color:var(--g)}.verdict.warn .v-title{color:var(--a)}.verdict.fail .v-title{color:var(--r)}
+.v-text{font-size:12px;color:var(--t2);line-height:1.8}
+
+/* METRIC CARDS */
+.mcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:1.25rem}
+.mc{background:var(--bg2);border:1px solid var(--b1);border-radius:var(--rad);padding:1rem 1.1rem;transition:border-color .2s}
+.mc.ok{border-color:var(--gbd);background:rgba(0,229,176,0.035)}
+.mc.warn{border-color:var(--abd);background:rgba(245,166,35,0.035)}
+.mc.bad{border-color:var(--rbd);background:rgba(255,77,77,0.035)}
+.mc-l{font-size:10px;color:var(--t3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px}
+.mc-v{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;line-height:1;margin-bottom:4px}
+.mc.ok .mc-v{color:var(--g)}.mc.warn .mc-v{color:var(--a)}.mc.bad .mc-v{color:var(--r)}.mc .mc-v{color:var(--t1)}
+.mc-s{font-size:10px;color:var(--t3)}
+
+/* CCI */
+.cci-card{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rad2);padding:1.5rem;margin-bottom:1.25rem}
+.cci-in{display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start}
+.cci-num{text-align:center;flex-shrink:0}
+.cci-big{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;line-height:1}
+.cci-sub{font-size:10px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-top:6px}
+.cci-chart{flex:1;min-width:180px}
+.cci-ax{display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-bottom:6px}
+.cci-tr{height:7px;background:var(--bg4);border-radius:4px;position:relative;overflow:visible;margin-bottom:12px}
+.cci-fl{height:100%;border-radius:4px;transition:width 1.4s cubic-bezier(.22,1,.36,1)}
+.cci-pt{position:absolute;top:-5px;width:17px;height:17px;border-radius:50%;border:2.5px solid var(--bg2);transition:left 1.4s cubic-bezier(.22,1,.36,1)}
+.cci-gs{display:flex;flex-wrap:wrap;gap:6px}
+.cg{font-size:10px;padding:3px 9px;border-radius:4px;border:1px solid;letter-spacing:.04em}
+.cg.on{background:var(--gbg);border-color:var(--gbd);color:var(--g)}.cg.off{background:var(--bg3);border-color:var(--b1);color:var(--t3)}
+.cci-f{flex:1;min-width:180px}
+.cf-l{font-size:10px;color:var(--t3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.cf-t{font-size:11px;color:var(--t2);line-height:2.1;white-space:pre-wrap}
+
+/* ISO ROW */
+.isorow{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rad2);padding:1.1rem 1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.iso-b{padding:5px 14px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:.04em}
+.iso-eca{background:var(--gbg);border:1px solid var(--gbd);color:var(--g)}
+.iso-vls{background:var(--abg);border:1px solid var(--abd);color:var(--a)}
+.iso-note{font-size:12px;color:var(--t2)}
+
+/* TABLE */
+.tbl-card{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rad2);overflow:hidden;margin-bottom:1.25rem}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:.65rem 1rem;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);background:var(--bg3);border-bottom:1px solid var(--b1);white-space:nowrap}
+td{padding:.65rem 1rem;border-bottom:1px solid var(--b1);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.012)}
+.t-n{font-weight:600;color:var(--t1)}.t-v{color:var(--t1)}.t-l{color:var(--t3)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600;letter-spacing:.04em;white-space:nowrap}
+.bok{background:var(--gbg);color:var(--g)}.bwn{background:var(--abg);color:var(--a)}.bbd{background:var(--rbg);color:var(--r)}.bna{background:var(--bg3);color:var(--t3)}
+
+/* RECS */
+.recs{display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem}
+.rec{background:var(--bg2);border:1px solid var(--b1);border-radius:var(--rad);padding:1rem 1.15rem;display:flex;gap:12px;border-left-width:3px}
+.rec.h{border-left-color:var(--r)}.rec.m{border-left-color:var(--a)}.rec.l{border-left-color:var(--g)}
+.r-num{font-size:10px;color:var(--t3);flex-shrink:0;padding-top:3px;min-width:20px}
+.r-pt{display:inline-block;font-size:9px;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border-radius:4px;margin-bottom:4px}
+.r-pt.h{background:var(--rbg);color:var(--r)}.r-pt.m{background:var(--abg);color:var(--a)}.r-pt.l{background:var(--gbg);color:var(--g)}
+.r-ti{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin-bottom:3px;color:var(--t1)}
+.r-tx{font-size:11px;color:var(--t2);line-height:1.75}
+
+/* RAW */
+.raw-card{background:var(--bg2);border:1px solid var(--b1);border-radius:var(--rad2);overflow:hidden;margin-bottom:1.25rem}
+.raw-h{padding:.9rem 1.2rem;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:600;user-select:none;transition:background .15s}
+.raw-h:hover{background:var(--bg3)}
+.raw-ar{color:var(--t3);transition:transform .2s;display:inline-block;margin-left:auto}
+.raw-ar.open{transform:rotate(180deg)}
+.raw-b{display:none;padding:1.2rem;border-top:1px solid var(--b1)}
+.raw-b.show{display:block}
+pre{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--t2);white-space:pre-wrap;line-height:1.7;overflow-x:auto}
+
+footer{text-align:center;margin-top:4rem;padding-top:2rem;border-top:1px solid var(--b1);font-size:10px;color:var(--t3);letter-spacing:.05em;line-height:2.5}
+footer span{color:var(--g)}
+footer a{color:var(--bl);text-decoration:none}.footer a:hover{text-decoration:underline}
+
+@media(max-width:600px){
+  .mcards{grid-template-columns:1fr 1fr}
+  .cci-in{flex-direction:column;gap:1.25rem}
+  .cci-big{font-size:52px}
+  th,td{padding:.5rem .7rem}
+  .hero h1{font-size:28px}
+  .hero-features{gap:7px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-ico">&#9875;</div>
+    <div class="nav-name">Fuel<span>Analyze</span></div>
+  </div>
+  <div class="nav-tags">
+    <span class="ntag nt-g">ISO 8217:2024</span>
+    <span class="ntag nt-g">MARPOL VI</span>
+    <span class="ntag nt-a">CCI</span>
+    <span class="ntag nt-a">ECA</span>
+    <span class="ntag nt-a">AI</span>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Анализ судового<br><span>топлива с AI</span></h1>
+  <p>Загрузите паспорт качества &mdash; система проверит соответствие ISO&nbsp;8217:2024 и MARPOL, рассчитает цетановый индекс и выдаст рекомендации по эксплуатации.</p>
+  <div class="hero-features">
+    <div class="hf"><div class="hf-dot"></div>ISO 8217:2024</div>
+    <div class="hf"><div class="hf-dot"></div>MARPOL Annex VI</div>
+    <div class="hf"><div class="hf-dot"></div>Расчёт CCI</div>
+    <div class="hf"><div class="hf-dot"></div>ECA Compliance</div>
+    <div class="hf"><div class="hf-dot"></div>DMA / DMB / RMG</div>
+    <div class="hf"><div class="hf-dot"></div>Бесплатно</div>
+  </div>
+</div>
+
+<div class="upload-card">
+  <div class="uc-title">Загрузите паспорт качества топлива</div>
+  <div class="uc-desc">PDF или фото документа &mdash; паспорт ТУ, ГОСТ, ISO Certificate of Quality, CoA бункерного топлива. Файл анализируется и не сохраняется.</div>
+
+  <div class="uzone" id="uzone">
+    <input type="file" id="fi" accept=".pdf,image/jpeg,image/png,image/webp">
+    <div class="u-ico">&#128203;</div>
+    <div class="u-title">Перетащите файл сюда</div>
+    <div class="u-sub">или нажмите для выбора</div>
+    <div class="u-hint">PDF &middot; JPG &middot; PNG &middot; до 15 МБ</div>
+  </div>
+
+  <div class="fpill" id="fpill">
+    <span style="font-size:18px">&#128196;</span>
+    <span class="fp-n" id="fpN"></span>
+    <span class="fp-s" id="fpS"></span>
+    <button class="fp-x" onclick="resetFile()">&#10005;</button>
+  </div>
+
+  <div class="formats">
+    <div class="fmt"><span class="fmt-ico">&#128196;</span> ТУ / ГОСТ</div>
+    <div class="fmt"><span class="fmt-ico">&#128196;</span> ISO CoA</div>
+    <div class="fmt"><span class="fmt-ico">&#128196;</span> Бункерный паспорт</div>
+    <div class="fmt"><span class="fmt-ico">&#128247;</span> Фото документа</div>
+  </div>
+</div>
+
+<div class="ebox" id="ebox"><span>&#9888;</span><span id="etxt"></span></div>
+<button class="btn bp abtn" id="abtn" disabled onclick="analyze()">Выберите файл для анализа</button>
+
+<div class="loader" id="loader">
+  <div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div>
+  <div class="l-title">Анализируем паспорт&hellip;</div>
+  <div class="l-step" id="lstep">Извлечение данных из документа</div>
+  <div class="progress"><div class="progress-bar" id="pbar"></div></div>
+</div>
+
+<div class="res" id="res"></div>
+
+<footer>
+  <span>FuelAnalyze</span> &mdash; Marine Fuel Quality Analyzer &mdash; ISO 8217:2024 &mdash; MARPOL Annex VI<br>
+  Анализ выполняется <a href="https://www.anthropic.com" target="_blank">Anthropic Claude</a> &mdash; файлы не сохраняются &mdash; 2025
+</footer>
+</div>
+
+<script>
+const STEPS=['Извлечение данных из документа...','Идентификация показателей качества...','Сравнение с нормами ISO 8217:2024...','Расчёт цетанового индекса CCI...','Формирование рекомендаций...'];
+let FILE=null,ST=null,PB=0,PT=null;
+
+const uz=document.getElementById('uzone');
+const fi=document.getElementById('fi');
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('drag');});
+uz.addEventListener('dragleave',()=>uz.classList.remove('drag'));
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('drag');if(e.dataTransfer.files[0])pickFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',e=>{if(e.target.files[0])pickFile(e.target.files[0]);});
+
+function pickFile(f){
+  if(f.size>15*1024*1024){showErr('Файл слишком большой. Максимум 15 МБ.');return;}
+  FILE=f;
+  document.getElementById('fpN').textContent=f.name;
+  document.getElementById('fpS').textContent=(f.size/1024).toFixed(0)+' KB';
+  document.getElementById('fpill').classList.add('show');
+  uz.style.display='none';
+  hideErr();
+  const b=document.getElementById('abtn');
+  b.disabled=false;b.textContent='Запустить анализ \u2192';
+}
+
+function resetFile(){
+  FILE=null;fi.value='';
+  document.getElementById('fpill').classList.remove('show');
+  uz.style.display='';
+  document.getElementById('res').classList.remove('show');
+  document.getElementById('res').innerHTML='';
+  const b=document.getElementById('abtn');
+  b.disabled=true;b.textContent='Выберите файл для анализа';
+  hideErr();
+}
+
+function showErr(m){document.getElementById('ebox').classList.add('show');document.getElementById('etxt').textContent=m;}
+function hideErr(){document.getElementById('ebox').classList.remove('show');}
+
+function toB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f);});}
+
+function startProgress(){
+  PB=0;clearInterval(PT);
+  PT=setInterval(()=>{
+    PB=Math.min(PB+Math.random()*3,90);
+    document.getElementById('pbar').style.width=PB+'%';
+  },300);
+}
+function endProgress(){
+  clearInterval(PT);
+  document.getElementById('pbar').style.width='100%';
+}
+
+async function analyze(){
+  if(!FILE)return;
+  hideErr();
+  document.getElementById('res').classList.remove('show');
+  document.getElementById('res').innerHTML='';
+  document.getElementById('loader').classList.add('show');
+  document.getElementById('abtn').disabled=true;
+  startProgress();
+  let si=0;
+  ST=setInterval(()=>{si=(si+1)%STEPS.length;document.getElementById('lstep').textContent=STEPS[si];},2400);
+
+  try{
+    const b64=await toB64(FILE);
+    const isPdf=FILE.type==='application/pdf'||FILE.name.toLowerCase().endsWith('.pdf');
+    const mt=isPdf?'application/pdf':(FILE.type||'image/jpeg');
+
+    const resp=await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({fileData:b64,mediaType:mt})
+    });
+
+    const data=await resp.json();
+    if(!resp.ok)throw new Error(data.error||'Ошибка сервера');
+    if(data.result?.error==='not_fuel_doc')throw new Error('Файл не является паспортом топлива: '+(data.result.message||''));
+
+    clearInterval(ST);endProgress();
+    document.getElementById('loader').classList.remove('show');
+    render(data.result,data.raw||'');
+
+  }catch(e){
+    clearInterval(ST);endProgress();
+    document.getElementById('loader').classList.remove('show');
+    document.getElementById('abtn').disabled=false;
+    showErr(e.message||'Ошибка анализа. Попробуйте ещё раз.');
+  }
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function bdg(s,r){
+  const m={ok:['bok','&#10003; OK'],warn:['bwn','&#9651; WARN'],bad:['bbd','&#10007; FAIL'],na:['bna','&mdash; N/A']};
+  const[c,l]=m[s]||m.na;
+  return '<span class="badge '+c+'" title="'+esc(r||'')+'">'+l+'</span>';
+}
+
+function render(d,raw){
+  const p=d.product||{},pr=d.parameters||[],cc=d.cci||{},v=d.verdict||{},rc=d.recommendations||[],co=d.compliance||{};
+  const vl=v.level||'warn';
+  const vi={pass:{c:'pass',i:'&#9989;'},warn:{c:'warn',i:'&#9888;&#65039;'},fail:{c:'fail',i:'&#10060;'}};
+  const vc=vi[vl]||vi.warn;
+  const sp=co.sulfur_pct,fp=co.flash_point,dp=co.density_15;
+  const sc=sp==null?'':sp<=0.10?'ok':sp<=0.50?'warn':'bad';
+  const fc=fp==null?'':fp>=60?'ok':'bad';
+  const dc=dp==null?'':dp<=890?'ok':'warn';
+  const cv=cc.value;
+  let ccol='#41485c';
+  if(cv!=null){if(cv>=45)ccol='#00e5b0';else if(cv>=40)ccol='#f5a623';else ccol='#ff4d4d';}
+  const cpct=cv!=null?Math.min(100,Math.max(0,((cv-25)/40)*100)):0;
+  const gs=[{n:'DMX',m:45,o:cc.dmx_ok},{n:'DMA',m:40,o:cc.dma_ok},{n:'DMZ',m:40,o:cc.dmz_ok},{n:'DMB',m:35,o:cc.dmb_ok}];
+  const pc={high:'h',med:'m',low:'l'};
+  const pl={high:'&#9888; Критично',med:'&#9651; Важно',low:'&#10003; Рекомендую'};
+  const rows=pr.map(x=>'<tr><td class="t-n">'+esc(x.name)+'</td><td class="t-v">'+esc(x.value)+' <span style="color:var(--t3)">'+esc(x.unit)+'</span></td><td class="t-l">'+esc(x.limit_tu||'&mdash;')+'</td><td class="t-l">'+esc(x.limit_iso||'&mdash;')+'</td><td>'+bdg(x.status,x.reason)+'</td></tr>').join('');
+  const rhtml=rc.map((r,i)=>'<div class="rec '+(pc[r.priority]||'l')+'"><span class="r-num">'+String(i+1).padStart(2,'0')+'</span><div><span class="r-pt '+(pc[r.priority]||'l')+'">'+(pl[r.priority]||'Рекомендую')+'</span><div class="r-ti">'+esc(r.title)+'</div><div class="r-tx">'+esc(r.text)+'</div></div></div>').join('');
+
+  document.getElementById('res').innerHTML=`
+<div class="verdict ${vc.c}"><span class="v-ico">${vc.i}</span><div><div class="v-title">${esc(v.title)}</div><div class="v-text">${esc(v.summary)}</div></div></div>
+<div class="slbl">Идентификация продукта</div>
+<div class="mcards">
+<div class="mc" style="grid-column:span 2"><div class="mc-l">Продукт</div><div class="mc-v" style="font-size:15px">${esc(p.name||'&mdash;')}</div><div class="mc-s">${esc(p.grade||'')}${p.iso_grade?' &middot; '+esc(p.iso_grade):''} &mdash; ${esc(p.producer||'')}</div></div>
+<div class="mc"><div class="mc-l">Паспорт / Дата</div><div class="mc-v" style="font-size:14px">&#8470;&nbsp;${esc(p.passport_no||'&mdash;')}</div><div class="mc-s">${esc(p.date||'')}</div></div>
+<div class="mc"><div class="mc-l">Партия</div><div class="mc-v" style="font-size:14px">${esc(p.batch_size||'&mdash;')}</div><div class="mc-s">&nbsp;</div></div>
+<div class="mc ${sc}"><div class="mc-l">Сера, %</div><div class="mc-v">${sp!=null?sp.toFixed(4):'&mdash;'}</div><div class="mc-s">${sp!=null?(sp<=0.10?'ECA-ready &le;0.10%':sp<=0.50?'VLSFO &le;0.50%':'&#9888; Превышение'):'&mdash;'}</div></div>
+<div class="mc ${fc}"><div class="mc-l">Вспышка, &deg;C</div><div class="mc-v">${fp!=null?fp:'&mdash;'}</div><div class="mc-s">норма &ge; 60&deg;C</div></div>
+<div class="mc ${dc}"><div class="mc-l">Плотность кг/м&sup3;</div><div class="mc-v" style="font-size:17px">${dp!=null?dp.toFixed(1):'&mdash;'}</div><div class="mc-s">при 15&deg;C</div></div>
+</div>
+${cv!=null?`<div class="slbl">Цетановый индекс (CCI)</div>
+<div class="cci-card"><div class="cci-in">
+<div class="cci-num"><div class="cci-big" style="color:${ccol}">${cv.toFixed(1)}</div><div class="cci-sub">CCI &middot; ISO 4264</div></div>
+<div class="cci-chart">
+<div class="cci-ax"><span>25</span><span>35</span><span>40</span><span>45</span><span>65</span></div>
+<div class="cci-tr"><div class="cci-fl" id="cf" style="width:0%;background:${ccol}"></div><div class="cci-pt" id="cp" style="left:0%;background:${ccol}"></div></div>
+<div class="cci-gs">${gs.map(g=>'<span class="cg '+(g.o?'on':'off')+'">'+g.n+' &ge;'+g.m+'</span>').join('')}</div>
+</div>
+${cc.formula?'<div class="cci-f"><div class="cf-l">Формула расчёта</div><div class="cf-t">'+esc(cc.formula)+'</div></div>':''}
+</div>${cc.note?'<div style="margin-top:1rem;font-size:12px;color:var(--t2);border-top:1px solid var(--b1);padding-top:.9rem">'+esc(cc.note)+'</div>':''}</div>`:''}
+<div class="slbl">Соответствие MARPOL / ISO 8217</div>
+<div class="isorow"><span class="iso-b ${co.eca_ready?'iso-eca':'iso-vls'}">${co.eca_ready?'&#10003; ECA-Ready (S &le;0.10%)':'&#9888; Глобальный лимит (S &le;0.50%)'}</span><span class="iso-note">${esc(co.eca_note||'')}</span></div>
+<div class="slbl">Показатели качества &mdash; полная таблица</div>
+<div class="tbl-card"><div class="tbl-scroll"><table><thead><tr><th>Показатель</th><th>Факт</th><th>Норма ТУ/ГОСТ</th><th>ISO 8217</th><th>Статус</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+<div class="slbl">Рекомендации по эксплуатации</div>
+<div class="recs">${rhtml}</div>
+<div class="raw-card">
+<div class="raw-h" onclick="this.querySelector('.raw-ar').classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+<span style="color:var(--t3)">{&nbsp;}</span><span>JSON-ответ AI</span><span class="raw-ar">&#9662;</span>
+</div>
+<div class="raw-b"><pre>${esc(raw)}</pre></div>
+</div>
+<button class="btn bs" style="width:100%;margin-top:.5rem" onclick="fullReset()">&#8592; Анализировать другой документ</button>`;
+
+  setTimeout(()=>{
+    const f=document.getElementById('cf'),cp=document.getElementById('cp');
+    if(f)f.style.width=cpct+'%';if(cp)cp.style.left=cpct+'%';
+  },150);
+  document.getElementById('res').classList.add('show');
+  document.getElementById('res').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function fullReset(){
+  resetFile();
+  document.getElementById('res').classList.remove('show');
+  document.getElementById('res').innerHTML='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
